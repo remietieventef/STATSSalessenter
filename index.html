@@ -17,17 +17,12 @@
             background-color: #f3f3f3;
             border-radius: 4px;
             overflow: hidden;
-            margin-bottom: 10px;
             height: 10px;
         }
         .progress-bar {
             height: 10px;
             background-color: #4caf50;
             width: 0%;
-        }
-        .stats {
-            display: flex;
-            justify-content: space-between;
         }
         table {
             width: 100%;
@@ -71,6 +66,15 @@
             padding: 4px 8px;
             font-size: 12px;
         }
+        .stats-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .stats-form label, .stats-form input, .stats-form select, .stats-form button {
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
@@ -93,21 +97,17 @@
         </table>
 
         <h2 style="font-size: 14px;">Update Statistics</h2>
-        <form id="stats-form">
+        <form id="stats-form" class="stats-form">
             <label for="staff-select">Select Staff:</label>
             <select id="staff-select" name="staff-select" required>
                 <!-- Staff options will be dynamically added here -->
             </select>
-            <br>
             <label for="calls">Number of Calls:</label>
             <input type="number" id="calls" name="calls" required>
-            <br>
             <label for="calls-reached">Number of Calls Reached:</label>
             <input type="number" id="calls-reached" name="calls-reached" required>
-            <br>
             <label for="pq">Number of PQ Sent/Created:</label>
             <input type="number" id="pq" name="pq" required>
-            <br>
             <button type="submit">Update</button>
         </form>
     </div>
