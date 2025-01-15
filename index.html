@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Team Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .progress {
+            background-color: #f3f3f3;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #4caf50;
+            width: 0%;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        .hidden {
+            display: none;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sales Team Comparison</h1>
+
+        <table id="leaderboard">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Number of Calls</th>
+                    <th>Number of Calls Reached</th>
+                    <th>Number of PQ Sent/Created</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Staff rows will be dynamically added here -->
+            </tbody>
+        </table>
+
+        <h2>Update Statistics</h2>
+        <form id="stats-form">
+            <label for="calls">Number of Calls:</label>
+            <input type="number" id="calls" name="calls" required>
+            <br>
+            <label for="calls-reached">Number of Calls Reached:</label>
+            <input type="number" id="calls-reached" name="calls-reached" required>
+            <br>
+            <label for="pq">Number of PQ Sent/Created:</label>
+            <input type="number" id="pq" name="pq" required>
+            <br>
+            <button type="submit">Update</button>
+        </form>
+    </div>
+
+    <div class="popup-overlay" id="popup-overlay"></div>
+    <div class="popup" id="popup">
+        <h3>Hide Staff</h3>
+        <p>Do you want to hide this staff member?</p>
+        <button id="confirm-hide">Yes</button>
+        <button id="cancel-hide">No</button>
+    </div>
+
+    <script>
+        const staffList = [
+            "Alexane Diez Rannou", "Anna Nguyen", "Anne Chevreux", "Carla Berlinches", "Chloe Anselme", "Emma Brault", "Guilhem Coulon", "Ines Darhi", "Kathia Corrales", "Leo Jaffrain", "Leonie Groebmueller", "LeoPaul Cazaudumec", "Maialen Roucheyrolle", "Manon Gascogne", "Marie Leger", "Martin Vandenheede", "Miriana Migliozzi", "Raphael Rigault"
+        ];
+
+        const callsGoal = 300;
+        const callsReachedGoal = 60;
+        const pqGoal = 8;
+
+        const leaderboard = document.getElementById('leaderboard').querySelector('tbody');
+
+        staffList.forEach(staff => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${staff}</td>
+                <td id="${staff}-calls">0</td>
+                <td id="${staff}-calls-reached">0</td>
+                <td id="${staff}-pq">0</td>
+                <td><button onclick="showPopup('${staff}')">Hide</button></td>
+            `;
+            leaderboard.appendChild(row);
+        });
+
+        document.getElementById('stats-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const calls = parseInt(document.getElementById('calls').value, 10);
+            const callsReached = parseInt(document.getElementById('calls-reached').value, 10);
+            const pq = parseInt(document.getElementById('pq').value, 10);
+
+            updateProgress(calls, callsReached, pq);
+        });
+
+        function updateProgress(calls, callsReached, pq) {
+            const rows = leaderboard.querySelectorAll('tr');
+            rows.forEach(row => {
+                const staffName = row.cells[0].textContent;
+                document.getElementById(`${staffName}-calls`).textContent = calls;
+                document.getElementById(`${staffName}-calls-reached`).textContent = callsReached;
+                document.getElementById(`${staffName}-pq`).textContent = pq;
+            });
+        }
+
+        function showPopup(staff) {
+            document.getElementById('popup-overlay').style.display = 'block';
+            document.getElementById('popup').style.display = 'block';
+
+            document.getElementById('confirm-hide').onclick = function() {
+                hideStaff(staff);
+                closePopup();
+            };
+
+            document.getElementById('cancel-hide').onclick = closePopup;
+        }
+
+        function hideStaff(staff) {
+            const rows = leaderboard.querySelectorAll('tr');
+            rows.forEach(row => {
+                if (row.cells[0].textContent === staff) {
+                    row.classList.add('hidden');
+                }
+            });
+        }
+
+        function closePopup() {
+            document.getElementById('popup-overlay').style.display = 'none';
+            document.getElementById('popup').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
