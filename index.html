@@ -7,19 +7,21 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            font-size: 12px;
         }
         .container {
-            width: 80%;
+            width: 90%;
             margin: 0 auto;
         }
         .progress {
             background-color: #f3f3f3;
             border-radius: 4px;
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            height: 10px;
         }
         .progress-bar {
-            height: 20px;
+            height: 10px;
             background-color: #4caf50;
             width: 0%;
         }
@@ -30,14 +32,15 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         table, th, td {
             border: 1px solid #ddd;
         }
         th, td {
-            padding: 8px;
+            padding: 4px;
             text-align: left;
+            font-size: 10px;
         }
         .hidden {
             display: none;
@@ -48,10 +51,11 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background-color: white;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
             z-index: 1000;
             display: none;
+            font-size: 12px;
         }
         .popup-overlay {
             position: fixed;
@@ -63,11 +67,15 @@
             z-index: 999;
             display: none;
         }
+        button {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Sales Team Comparison</h1>
+        <h1 style="font-size: 16px;">Sales Team Comparison</h1>
 
         <table id="leaderboard">
             <thead>
@@ -84,7 +92,7 @@
             </tbody>
         </table>
 
-        <h2>Update Statistics</h2>
+        <h2 style="font-size: 14px;">Update Statistics</h2>
         <form id="stats-form">
             <label for="staff-select">Select Staff:</label>
             <select id="staff-select" name="staff-select" required>
@@ -106,8 +114,8 @@
 
     <div class="popup-overlay" id="popup-overlay"></div>
     <div class="popup" id="popup">
-        <h3>Hide Staff</h3>
-        <p>Do you want to hide this staff member?</p>
+        <h3 style="font-size: 14px;">Hide Staff</h3>
+        <p style="font-size: 12px;">Do you want to hide this staff member?</p>
         <button id="confirm-hide">Yes</button>
         <button id="cancel-hide">No</button>
     </div>
