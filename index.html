@@ -86,6 +86,11 @@
 
         <h2>Update Statistics</h2>
         <form id="stats-form">
+            <label for="staff-select">Select Staff:</label>
+            <select id="staff-select" name="staff-select" required>
+                <!-- Staff options will be dynamically added here -->
+            </select>
+            <br>
             <label for="calls">Number of Calls:</label>
             <input type="number" id="calls" name="calls" required>
             <br>
@@ -117,6 +122,7 @@
         const pqGoal = 8;
 
         const leaderboard = document.getElementById('leaderboard').querySelector('tbody');
+        const staffSelect = document.getElementById('staff-select');
 
         staffList.forEach(staff => {
             const row = document.createElement('tr');
@@ -128,25 +134,27 @@
                 <td><button onclick="showPopup('${staff}')">Hide</button></td>
             `;
             leaderboard.appendChild(row);
+
+            const option = document.createElement('option');
+            option.value = staff;
+            option.textContent = staff;
+            staffSelect.appendChild(option);
         });
 
         document.getElementById('stats-form').addEventListener('submit', function(event) {
             event.preventDefault();
+            const selectedStaff = document.getElementById('staff-select').value;
             const calls = parseInt(document.getElementById('calls').value, 10);
             const callsReached = parseInt(document.getElementById('calls-reached').value, 10);
             const pq = parseInt(document.getElementById('pq').value, 10);
 
-            updateProgress(calls, callsReached, pq);
+            updateProgress(selectedStaff, calls, callsReached, pq);
         });
 
-        function updateProgress(calls, callsReached, pq) {
-            const rows = leaderboard.querySelectorAll('tr');
-            rows.forEach(row => {
-                const staffName = row.cells[0].textContent;
-                document.getElementById(`${staffName}-calls`).textContent = calls;
-                document.getElementById(`${staffName}-calls-reached`).textContent = callsReached;
-                document.getElementById(`${staffName}-pq`).textContent = pq;
-            });
+        function updateProgress(staff, calls, callsReached, pq) {
+            document.getElementById(`${staff}-calls`).textContent = calls;
+            document.getElementById(`${staff}-calls-reached`).textContent = callsReached;
+            document.getElementById(`${staff}-pq`).textContent = pq;
         }
 
         function showPopup(staff) {
