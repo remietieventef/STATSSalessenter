@@ -18,6 +18,7 @@
             border-radius: 4px;
             overflow: hidden;
             height: 10px;
+            margin-top: 5px;
         }
         .progress-bar {
             height: 10px;
@@ -36,6 +37,7 @@
             padding: 4px;
             text-align: left;
             font-size: 10px;
+            vertical-align: top;
         }
         .hidden {
             display: none;
@@ -136,9 +138,24 @@
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${staff}</td>
-                <td id="${staff}-calls">0</td>
-                <td id="${staff}-calls-reached">0</td>
-                <td id="${staff}-pq">0</td>
+                <td>
+                    <div id="${staff}-calls">0</div>
+                    <div class="progress">
+                        <div id="${staff}-progress-calls" class="progress-bar"></div>
+                    </div>
+                </td>
+                <td>
+                    <div id="${staff}-calls-reached">0</div>
+                    <div class="progress">
+                        <div id="${staff}-progress-calls-reached" class="progress-bar"></div>
+                    </div>
+                </td>
+                <td>
+                    <div id="${staff}-pq">0</div>
+                    <div class="progress">
+                        <div id="${staff}-progress-pq" class="progress-bar"></div>
+                    </div>
+                </td>
                 <td><button onclick="showPopup('${staff}')">Hide</button></td>
             `;
             leaderboard.appendChild(row);
@@ -147,22 +164,6 @@
             option.value = staff;
             option.textContent = staff;
             staffSelect.appendChild(option);
-
-            const progressRow = document.createElement('tr');
-            progressRow.innerHTML = `
-                <td colspan="5">
-                    <div class="progress">
-                        <div id="${staff}-progress-calls" class="progress-bar"></div>
-                    </div>
-                    <div class="progress">
-                        <div id="${staff}-progress-calls-reached" class="progress-bar"></div>
-                    </div>
-                    <div class="progress">
-                        <div id="${staff}-progress-pq" class="progress-bar"></div>
-                    </div>
-                </td>
-            `;
-            leaderboard.appendChild(progressRow);
         });
 
         document.getElementById('stats-form').addEventListener('submit', function(event) {
