@@ -18,7 +18,10 @@
             border-radius: 4px;
             overflow: hidden;
             height: 10px;
-            margin-top: 5px;
+            margin-left: 10px;
+            width: 60%;
+            display: inline-block;
+            vertical-align: middle;
         }
         .progress-bar {
             height: 10px;
@@ -37,7 +40,8 @@
             padding: 4px;
             text-align: left;
             font-size: 10px;
-            vertical-align: top;
+            vertical-align: middle;
+            width: 25%;
         }
         .hidden {
             display: none;
@@ -90,7 +94,6 @@
                     <th>Number of Calls</th>
                     <th>Number of Calls Reached</th>
                     <th>Number of PQ Sent/Created</th>
-                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -118,8 +121,11 @@
     <div class="popup" id="popup">
         <h3 style="font-size: 14px;">Hide Staff</h3>
         <p style="font-size: 12px;">Do you want to hide this staff member?</p>
-        <button id="confirm-hide">Yes</button>
-        <button id="cancel-hide">No</button>
+        <select id="hide-staff-select" name="hide-staff-select">
+            <!-- Staff options will be dynamically added here -->
+        </select>
+        <button id="confirm-hide">Hide</button>
+        <button id="cancel-hide">Cancel</button>
     </div>
 
     <script>
@@ -133,30 +139,36 @@
 
         const leaderboard = document.getElementById('leaderboard').querySelector('tbody');
         const staffSelect = document.getElementById('staff-select');
+        const hideStaffSelect = document.getElementById('hide-staff-select');
 
         staffList.forEach(staff => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${staff}</td>
                 <td>
-                    <div id="${staff}-calls">0</div>
+                    <div style="display: inline-block; vertical-align: middle;">
+                        <div id="${staff}-calls">0</div>
+                    </div>
                     <div class="progress">
                         <div id="${staff}-progress-calls" class="progress-bar"></div>
                     </div>
                 </td>
                 <td>
-                    <div id="${staff}-calls-reached">0</div>
+                    <div style="display: inline-block; vertical-align: middle;">
+                        <div id="${staff}-calls-reached">0</div>
+                    </div>
                     <div class="progress">
                         <div id="${staff}-progress-calls-reached" class="progress-bar"></div>
                     </div>
                 </td>
                 <td>
-                    <div id="${staff}-pq">0</div>
+                    <div style="display: inline-block; vertical-align: middle;">
+                        <div id="${staff}-pq">0</div>
+                    </div>
                     <div class="progress">
                         <div id="${staff}-progress-pq" class="progress-bar"></div>
                     </div>
                 </td>
-                <td><button onclick="showPopup('${staff}')">Hide</button></td>
             `;
             leaderboard.appendChild(row);
 
@@ -164,6 +176,11 @@
             option.value = staff;
             option.textContent = staff;
             staffSelect.appendChild(option);
+
+            const hideOption = document.createElement('option');
+            hideOption.value = staff;
+            hideOption.textContent = staff;
+            hideStaffSelect.appendChild(hideOption);
         });
 
         document.getElementById('stats-form').addEventListener('submit', function(event) {
@@ -175,6 +192,14 @@
 
             updateProgress(selectedStaff, calls, callsReached, pq);
         });
+
+        document.getElementById('confirm-hide').addEventListener('click', function() {
+            const selectedStaff = hideStaffSelect.value;
+            hideStaff(selectedStaff);
+            closePopup();
+        });
+
+        document.getElementById('cancel-hide').addEventListener('click', closePopup);
 
         function updateProgress(staff, calls, callsReached, pq) {
             document.getElementById(`${staff}-calls`).textContent = calls;
@@ -191,18 +216,6 @@
             bar.style.width = `${percentage}%`;
         }
 
-        function showPopup(staff) {
-            document.getElementById('popup-overlay').style.display = 'block';
-            document.getElementById('popup').style.display = 'block';
-
-            document.getElementById('confirm-hide').onclick = function() {
-                hideStaff(staff);
-                closePopup();
-            };
-
-            document.getElementById('cancel-hide').onclick = closePopup;
-        }
-
         function hideStaff(staff) {
             const rows = leaderboard.querySelectorAll('tr');
             rows.forEach(row => {
@@ -212,10 +225,22 @@
             });
         }
 
+        function showPopup() {
+            document.getElementById('popup-overlay').style.display = 'block';
+            document.getElementById('popup').style.display = 'block';
+        }
+
         function closePopup() {
             document.getElementById('popup-overlay').style.display = 'none';
             document.getElementById('popup').style.display = 'none';
         }
+
+        window.addEventListener('load', function() {
+            const hideButton = document.createElement('button');
+            hideButton.textContent = 'Hide Staff';
+            hideButton.onclick = showPopup;
+            document.querySelector('.container').appendChild(hideButton);
+        });
     </script>
 </body>
 </html>
