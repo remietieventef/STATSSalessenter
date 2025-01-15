@@ -139,6 +139,22 @@
             option.value = staff;
             option.textContent = staff;
             staffSelect.appendChild(option);
+
+            const progressRow = document.createElement('tr');
+            progressRow.innerHTML = `
+                <td colspan="5">
+                    <div class="progress">
+                        <div id="${staff}-progress-calls" class="progress-bar"></div>
+                    </div>
+                    <div class="progress">
+                        <div id="${staff}-progress-calls-reached" class="progress-bar"></div>
+                    </div>
+                    <div class="progress">
+                        <div id="${staff}-progress-pq" class="progress-bar"></div>
+                    </div>
+                </td>
+            `;
+            leaderboard.appendChild(progressRow);
         });
 
         document.getElementById('stats-form').addEventListener('submit', function(event) {
@@ -155,6 +171,15 @@
             document.getElementById(`${staff}-calls`).textContent = calls;
             document.getElementById(`${staff}-calls-reached`).textContent = callsReached;
             document.getElementById(`${staff}-pq`).textContent = pq;
+
+            updateProgressBar(`${staff}-progress-calls`, calls / callsGoal * 100);
+            updateProgressBar(`${staff}-progress-calls-reached`, callsReached / callsReachedGoal * 100);
+            updateProgressBar(`${staff}-progress-pq`, pq / pqGoal * 100);
+        }
+
+        function updateProgressBar(barId, percentage) {
+            const bar = document.getElementById(barId);
+            bar.style.width = `${percentage}%`;
         }
 
         function showPopup(staff) {
