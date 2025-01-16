@@ -12,8 +12,7 @@
             background: url('fond.jpg') no-repeat center center fixed;
             background-size: cover;
             overflow: hidden;
-        }
-        }
+       }
         .container {
             width: 90%;
             margin: 0 auto;
@@ -101,7 +100,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Staff rows will be dynamically added here -->
+                <!-- Table rows dynamically generated -->
             </tbody>
         </table>
 
@@ -109,7 +108,7 @@
         <form id="stats-form" class="stats-form">
             <label for="staff-select">Select Staff:</label>
             <select id="staff-select" name="staff-select" required>
-                <!-- Staff options will be dynamically added here -->
+                <!-- Staff options dynamically generated -->
             </select>
             <label for="calls">Number of Calls:</label>
             <input type="number" id="calls" name="calls" required>
@@ -126,7 +125,7 @@
         <h3 style="font-size: 14px;">Hide Staff</h3>
         <p style="font-size: 12px;">Do you want to hide this staff member?</p>
         <select id="hide-staff-select" name="hide-staff-select">
-            <!-- Staff options will be dynamically added here -->
+            <!-- Staff options dynamically generated -->
         </select>
         <button id="confirm-hide">Hide</button>
         <button id="cancel-hide">Cancel</button>
@@ -134,48 +133,35 @@
 
     <script>
         const staffList = [
-            "Alexane Diez Rannou", "Anna Nguyen", "Anne Chevreux", "Carla Berlinches", "Chloe Anselme", "Emma Brault", "Guilhem Coulon", "Ines Darhi", "Kathia Corrales", "Leo Jaffrain", "Leonie Groebmueller", "LeoPaul Cazaudumec", "Maialen Roucheyrolle", "Manon Gascogne", "Marie Leger", "Martin Vandenheede", "Raphael Rigault"
+            "Alexane Diez Rannou", "Anna Nguyen", "Anne Chevreux", "Carla Berlinches", "Chloe Anselme", "Emma Brault", "Guilhem Coulon", "Ines Darhi", "Kathia Corrales", "Leo Jaffrain", "Leonie Groebmueller", "LeoPaul Cazaudumec", "Maialen Roucheyrolle", "Manon Gascogne", "Marie Leger", "Martin Vandenheede", "Miriana Migliozzi", "Raphael Rigault"
         ];
-
-        const callsGoal = 300;
-        const callsReachedGoal = 60;
-        const pqGoal = 8;
 
         const leaderboard = document.getElementById('leaderboard').querySelector('tbody');
         const staffSelect = document.getElementById('staff-select');
         const hideStaffSelect = document.getElementById('hide-staff-select');
 
+        // Populate table and dropdowns
         staffList.forEach(staff => {
+            // Add rows to leaderboard
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${staff}</td>
                 <td>
-                    <div style="display: inline-block; vertical-align: middle;">
-                        <div id="${staff}-calls">0</div>
-                    </div>
-                    <div class="progress">
-                        <div id="${staff}-progress-calls" class="progress-bar"></div>
-                    </div>
+                    <div>0</div>
+                    <div class="progress"><div class="progress-bar" style="width: 0%;"></div></div>
                 </td>
                 <td>
-                    <div style="display: inline-block; vertical-align: middle;">
-                        <div id="${staff}-calls-reached">0</div>
-                    </div>
-                    <div class="progress">
-                        <div id="${staff}-progress-calls-reached" class="progress-bar"></div>
-                    </div>
+                    <div>0</div>
+                    <div class="progress"><div class="progress-bar" style="width: 0%;"></div></div>
                 </td>
                 <td>
-                    <div style="display: inline-block; vertical-align: middle;">
-                        <div id="${staff}-pq">0</div>
-                    </div>
-                    <div class="progress">
-                        <div id="${staff}-progress-pq" class="progress-bar"></div>
-                    </div>
+                    <div>0</div>
+                    <div class="progress"><div class="progress-bar" style="width: 0%;"></div></div>
                 </td>
             `;
             leaderboard.appendChild(row);
 
+            // Add options to dropdowns
             const option = document.createElement('option');
             option.value = staff;
             option.textContent = staff;
@@ -187,84 +173,51 @@
             hideStaffSelect.appendChild(hideOption);
         });
 
+        // Update statistics
         document.getElementById('stats-form').addEventListener('submit', function(event) {
             event.preventDefault();
-            const selectedStaff = document.getElementById('staff-select').value;
+            const selectedStaff = staffSelect.value;
             const calls = parseInt(document.getElementById('calls').value, 10);
             const callsReached = parseInt(document.getElementById('calls-reached').value, 10);
             const pq = parseInt(document.getElementById('pq').value, 10);
 
-            updateProgress(selectedStaff, calls, callsReached, pq);
+            const rows = leaderboard.querySelectorAll('tr');
+            rows.forEach(row => {
+                if (row.cells[0].textContent === selectedStaff) {
+                    row.cells[1].querySelector('div').textContent = calls;
+                    row.cells[1].querySelector('.progress-bar').style.width = `${(calls / 300) * 100}%`;
+
+                    row.cells[2].querySelector('div').textContent = callsReached;
+                    row.cells[2].querySelector('.progress-bar').style.width = `${(callsReached / 60) * 100}%`;
+
+                    row.cells[3].querySelector('div').textContent = pq;
+                    row.cells[3].querySelector('.progress-bar').style.width = `${(pq / 8) * 100}%`;
+                }
+            });
         });
 
+        // Hide staff functionality
         document.getElementById('confirm-hide').addEventListener('click', function() {
             const selectedStaff = hideStaffSelect.value;
-            hideStaff(selectedStaff);
+            const rows = leaderboard.querySelectorAll('tr');
+            rows.forEach(row => {
+                if (row.cells[0].textContent === selectedStaff) {
+                    row.classList.add('hidden');
+                }
+            });
             closePopup();
         });
 
         document.getElementById('cancel-hide').addEventListener('click', closePopup);
 
-        function updateProgress(staff, calls, callsReached, pq) {
-            document.getElementById(`${staff}-calls`).textContent = calls;
-            document.getElementById(`${staff}-calls-reached`).textContent = callsReached;
-            document.getElementById(`${staff}-pq`).textContent = pq;
-
-            updateProgressBar(`${staff}-progress-calls`, calls, callsGoal);
-            updateProgressBar(`${staff}-progress-calls-reached`, callsReached, callsReachedGoal);
-            updateProgressBar(`${staff}-progress-pq`, pq, pqGoal);
-        }
-
-        function updateProgressBar(barId, value, goal) {
-            const bar = document.getElementById(barId);
-            let percentage = (value / goal) * 100;
-            bar.style.width = `${percentage}%`;
-
-            // Change bar color based on value
-            if (barId.includes('calls')) {
-                if (value <= 100) {
-                    bar.style.backgroundColor = 'orange';
-                } else if (value <= 250) {
-                    bar.style.backgroundColor = 'yellow';
-                } else {
-                    bar.style.backgroundColor = 'green';
-                }
-            } else if (barId.includes('calls-reached')) {
-                if (value <= 20) {
-                    bar.style.backgroundColor = 'orange';
-                } else if (value <= 40) {
-                    bar.style.backgroundColor = 'yellow';
-                } else {
-                    bar.style.backgroundColor = 'green';
-                }
-            } else if (barId.includes('pq')) {
-                if (value <= 4) {
-                    bar.style.backgroundColor = 'orange';
-                } else if (value <= 6) {
-                    bar.style.backgroundColor = 'yellow';
-                } else {
-                    bar.style.backgroundColor = 'green';
-                }
-            }
-        }
-
-        function hideStaff(staff) {
-            const rows = leaderboard.querySelectorAll('tr');
-            rows.forEach(row => {
-                if (row.cells[0].textContent === staff) {
-                    row.classList.add('hidden');
-                }
-            });
+        function closePopup() {
+            document.getElementById('popup-overlay').style.display = 'none';
+            document.getElementById('popup').style.display = 'none';
         }
 
         function showPopup() {
             document.getElementById('popup-overlay').style.display = 'block';
             document.getElementById('popup').style.display = 'block';
-        }
-
-        function closePopup() {
-            document.getElementById('popup-overlay').style.display = 'none';
-            document.getElementById('popup').style.display = 'none';
         }
 
         window.addEventListener('load', function() {
@@ -276,3 +229,4 @@
     </script>
 </body>
 </html>
+
