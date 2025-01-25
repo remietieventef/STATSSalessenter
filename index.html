@@ -3,136 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Dashboard</title>
+    <title>Sales Dashboard - Auth</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: url('fond.jpg') no-repeat center center fixed;
-            background-size: cover;
-        }
-        .container {
-            width: 90%;
-            margin: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        .progress {
-            background-color: #e0e0e0;
-            border-radius: 5px;
-            height: 10px;
-            width: 60%;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 10px;
-            background-color: green;
-            width: 0%;
-        }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .container { width: 90%; margin: auto; }
+        .hidden { display: none; }
+        form { margin: 20px 0; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Sales Dashboard</h1>
-        <table id="leaderboard">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Number of Calls</th>
-                    <th>Number of Calls Reached</th>
-                    <th>Number of PQ Sent/Created</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Rows dynamically added here -->
-            </tbody>
-        </table>
-        <form id="stats-form">
-            <label for="staff-select">Select Staff:</label>
-            <select id="staff-select"></select>
-            <label for="calls">Number of Calls:</label>
-            <input type="number" id="calls" required>
-            <label for="calls-reached">Number of Calls Reached:</label>
-            <input type="number" id="calls-reached" required>
-            <label for="pq">Number of PQ Sent/Created:</label>
-            <input type="number" id="pq" required>
-            <button type="submit">Update</button>
-        </form>
+        
+        <!-- Section Login -->
+        <div id="login-section">
+            <h2>Login</h2>
+            <form id="login-form">
+                <label for="login-id">ID:</label>
+                <input type="text" id="login-id" required>
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <!-- Section User -->
+        <div id="user-section" class="hidden">
+            <h2>Welcome, <span id="user-name"></span></h2>
+            <form id="user-stats-form">
+                <label for="calls">Number of Calls:</label>
+                <input type="number" id="calls" required>
+                <label for="calls-reached">Number of Calls Reached:</label>
+                <input type="number" id="calls-reached" required>
+                <label for="pq">Number of PQ Sent/Created:</label>
+                <input type="number" id="pq" required>
+                <button type="submit">Update Stats</button>
+            </form>
+        </div>
+
+        <!-- Section Admin -->
+        <div id="admin-section" class="hidden">
+            <h2>Admin Panel</h2>
+            <button id="view-users">View All Users</button>
+            <div id="users-list" class="hidden">
+                <ul id="users-data"></ul>
+            </div>
+        </div>
     </div>
+
     <script>
-        const API_URL = '/api/staff';
+        const API_URL = '/api/users';
 
-        async function fetchStaff() {
-            const response = await fetch(API_URL);
-            return response.json();
-        }
+        // Elements
+        const loginSection = document.getElementById('login-section');
+        const userSection = document.getElementById('user-section');
+        const adminSection = document.getElementById('admin-section');
+        const userNameDisplay = document.getElementById('user-name');
 
-        async function updateStaff(name, calls, callsReached, pq) {
-            await fetch(API_URL, {
+        let currentUser = null;
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('login-id').value;
+            const password = document.getElementById('login-password').value;
+
+            const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, calls, callsReached, pq }),
+                body: JSON.stringify({ id, password })
             });
-        }
 
-        async function loadTable() {
-            const staffData = await fetchStaff();
-            const leaderboard = document.querySelector('#leaderboard tbody');
-            const staffSelect = document.querySelector('#staff-select');
-
-            leaderboard.innerHTML = '';
-            staffSelect.innerHTML = '';
-
-            staffData.forEach(staff => {
-                // Add rows to the table
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${staff.name}</td>
-                    <td>
-                        <div>${staff.calls}</div>
-                        <div class="progress"><div class="progress-bar" style="width: ${(staff.calls / 300) * 100}%"></div></div>
-                    </td>
-                    <td>
-                        <div>${staff.callsReached}</div>
-                        <div class="progress"><div class="progress-bar" style="width: ${(staff.callsReached / 60) * 100}%"></div></div>
-                    </td>
-                    <td>
-                        <div>${staff.pq}</div>
-                        <div class="progress"><div class="progress-bar" style="width: ${(staff.pq / 8) * 100}%"></div></div>
-                    </td>
-                `;
-                leaderboard.appendChild(row);
-
-                // Add options to the select dropdown
-                const option = document.createElement('option');
-                option.value = staff.name;
-                option.textContent = staff.name;
-                staffSelect.appendChild(option);
-            });
-        }
-
-        document.querySelector('#stats-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.querySelector('#staff-select').value;
-            const calls = parseInt(document.querySelector('#calls').value);
-            const callsReached = parseInt(document.querySelector('#calls-reached').value);
-            const pq = parseInt(document.querySelector('#pq').value);
-
-            await updateStaff(name, calls, callsReached, pq);
-            await loadTable();
+            const data = await response.json();
+            if (response.ok) {
+                currentUser = id;
+                loginSection.classList.add('hidden');
+                if (id.startsWith('admin')) {
+                    adminSection.classList.remove('hidden');
+                } else {
+                    userSection.classList.remove('hidden');
+                    userNameDisplay.textContent = data.name;
+                }
+            } else {
+                alert(data.message);
+            }
         });
 
-        // Initialize the table on page load
-        window.addEventListener('DOMContentLoaded', loadTable);
+        document.getElementById('user-stats-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const calls = parseInt(document.getElementById('calls').value);
+            const callsReached = parseInt(document.getElementById('calls-reached').value);
+            const pq = parseInt(document.getElementById('pq').value);
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: currentUser, calls, callsReached, pq })
+            });
+
+            if (response.ok) {
+                alert('Stats updated successfully!');
+            } else {
+                alert('Failed to update stats.');
+            }
+        });
     </script>
 </body>
 </html>
+
