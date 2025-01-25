@@ -3,55 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Club 300 / 60 / 8</title>
+    <title>Sales Dashboard</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-            background: url('fond.jpg') no-repeat center center fixed;
-            background-size: cover;
         }
         .container {
             width: 90%;
-            margin: 0 auto;
+            margin: auto;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
+            margin-bottom: 20px;
         }
         th, td {
-            padding: 4px;
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
-            font-size: 10px;
-            vertical-align: middle;
         }
         .progress {
-            background-color: #f3f3f3;
-            border-radius: 4px;
-            overflow: hidden;
+            background-color: #e0e0e0;
+            border-radius: 5px;
             height: 10px;
             width: 60%;
-            display: inline-block;
-            vertical-align: middle;
+            overflow: hidden;
         }
         .progress-bar {
             height: 10px;
+            background-color: green;
             width: 0%;
-        }
-        button {
-            padding: 4px 8px;
-            font-size: 12px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Club 300 / 60 / 8</h1>
+        <h1>Sales Dashboard</h1>
         <table id="leaderboard">
             <thead>
                 <tr>
@@ -62,12 +51,12 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Rows will be loaded dynamically -->
+                <!-- Rows dynamically added here -->
             </tbody>
         </table>
         <form id="stats-form">
             <label for="staff-select">Select Staff:</label>
-            <select id="staff-select"></select>
+            <select id="staff-select" required></select>
             <label for="calls">Number of Calls:</label>
             <input type="number" id="calls" required>
             <label for="calls-reached">Number of Calls Reached:</label>
@@ -78,27 +67,31 @@
         </form>
     </div>
     <script>
-        const API_BASE = '/api/staff';
+        const API_URL = '/api/staff';
 
-        async function fetchStaffData() {
-            const response = await fetch(API_BASE);
+        async function fetchStaff() {
+            const response = await fetch(API_URL);
             return response.json();
         }
 
-        async function updateStaffData(name, data) {
-            await fetch(`${API_BASE}/${name}`, {
+        async function updateStaff(name, calls, callsReached, pq) {
+            await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
+                body: JSON.stringify({ name, calls, callsReached, pq }),
             });
         }
 
-        async function initialize() {
-            const staffData = await fetchStaffData();
-            const leaderboard = document.getElementById('leaderboard').querySelector('tbody');
-            const staffSelect = document.getElementById('staff-select');
+        async function loadTable() {
+            const staffData = await fetchStaff();
+            const leaderboard = document.querySelector('#leaderboard tbody');
+            const staffSelect = document.querySelector('#staff-select');
 
-            staffData.forEach((staff) => {
+            leaderboard.innerHTML = '';
+            staffSelect.innerHTML = '';
+
+            staffData.forEach(staff => {
+                // Add rows to the table
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${staff.name}</td>
@@ -117,6 +110,7 @@
                 `;
                 leaderboard.appendChild(row);
 
+                // Add options to the select dropdown
                 const option = document.createElement('option');
                 option.value = staff.name;
                 option.textContent = staff.name;
@@ -124,18 +118,20 @@
             });
         }
 
-        document.getElementById('stats-form').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const staffName = document.getElementById('staff-select').value;
-            const calls = parseInt(document.getElementById('calls').value, 10);
-            const callsReached = parseInt(document.getElementById('calls-reached').value, 10);
-            const pq = parseInt(document.getElementById('pq').value, 10);
+        document.querySelector('#stats-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.querySelector('#staff-select').value;
+            const calls = parseInt(document.querySelector('#calls').value);
+            const callsReached = parseInt(document.querySelector('#calls-reached').value);
+            const pq = parseInt(document.querySelector('#pq').value);
 
-            await updateStaffData(staffName, { calls, callsReached, pq });
-            location.reload();
+            await updateStaff(name, calls, callsReached, pq);
+            await loadTable();
         });
 
-        initialize();
+        // Initialize the table on page load
+        window.addEventListener('DOMContentLoaded', loadTable);
     </script>
 </body>
 </html>
+
