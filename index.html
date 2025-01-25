@@ -47,9 +47,6 @@
             padding: 4px 8px;
             font-size: 12px;
         }
-        .stats-form label, .stats-form input, .stats-form select, .stats-form button {
-            font-size: 10px;
-        }
     </style>
 </head>
 <body>
@@ -65,7 +62,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Staff rows will be dynamically loaded here -->
+                <!-- Rows will be loaded dynamically -->
             </tbody>
         </table>
         <form id="stats-form">
@@ -81,7 +78,7 @@
         </form>
     </div>
     <script>
-        const API_BASE = '/api/staff'; // API base URL
+        const API_BASE = '/api/staff';
 
         async function fetchStaffData() {
             const response = await fetch(API_BASE);
@@ -101,7 +98,7 @@
             const leaderboard = document.getElementById('leaderboard').querySelector('tbody');
             const staffSelect = document.getElementById('staff-select');
 
-            staffData.forEach(staff => {
+            staffData.forEach((staff) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${staff.name}</td>
@@ -135,7 +132,7 @@
             const pq = parseInt(document.getElementById('pq').value, 10);
 
             await updateStaffData(staffName, { calls, callsReached, pq });
-            location.reload(); // Reload the page to update the leaderboard
+            location.reload();
         });
 
         initialize();
