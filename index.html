@@ -53,6 +53,16 @@
             </form>
         </div>
 
+        <!-- Change Password Section -->
+        <div id="change-password-section" class="hidden">
+            <h2>Change Your Password</h2>
+            <form id="change-password-form">
+                <label for="new-password">New Password:</label>
+                <input type="password" id="new-password" required>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+
         <!-- Dashboard Section -->
         <div id="dashboard-section" class="hidden">
             <h2>Welcome, <span id="user-name"></span></h2>
@@ -66,7 +76,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Staff rows will be dynamically added here -->
+                    <!-- Rows will be dynamically added here -->
                 </tbody>
             </table>
         </div>
@@ -94,16 +104,17 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    if (data.message === "Authenticated") {
+                    if (data.message === "New password required.") {
+                        // Affiche la section pour changer le mot de passe
+                        document.getElementById('login-section').classList.add('hidden');
+                        document.getElementById('change-password-section').classList.remove('hidden');
                         currentUser = id;
+                    } else {
+                        // Connexion réussie
                         document.getElementById('login-section').classList.add('hidden');
                         document.getElementById('dashboard-section').classList.remove('hidden');
                         document.getElementById('user-name').textContent = data.name;
-
-                        // Charger les statistiques après une connexion réussie
                         loadStats();
-                    } else {
-                        alert(data.message || 'Login failed.');
                     }
                 } else {
                     alert(data.message || 'Invalid credentials.');
@@ -114,20 +125,48 @@
             }
         });
 
-        // Charger les statistiques du tableau
+        // Gestion du changement de mot de passe
+        document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('new-password').value.trim();
+
+            if (!newPassword) {
+                alert("Please enter a new password.");
+                return;
+            }
+
+            try {
+                const response = await fetch(API_USERS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentUser, newPassword })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Password updated successfully! Please log in again.');
+                    document.getElementById('change-password-section').classList.add('hidden');
+                    document.getElementById('login-section').classList.remove('hidden');
+                } else {
+                    alert(data.message || 'Failed to update password.');
+                }
+            } catch (error) {
+                console.error('Password change error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+
+        // Charger les statistiques
         async function loadStats() {
             try {
-                console.log('Fetching staff statistics...');
                 const response = await fetch(API_STATS);
                 const stats = await response.json();
-
-                console.log('Staff Data:', stats);
 
                 const tableBody = document.getElementById('stats-table').querySelector('tbody');
                 tableBody.innerHTML = ''; // Réinitialiser le tableau
 
                 stats.forEach((stat) => {
-                    console.log('Adding row for:', stat.name);
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${stat.name}</td>
@@ -145,6 +184,4 @@
     </script>
 </body>
 </html>
-
-
 
