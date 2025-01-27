@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 
+// Données des utilisateurs
 let users = [
     { id: "alexane.diezrannou", name: "Alexane Diez Rannou", password: bcrypt.hashSync("default123", 10), mustChangePassword: true },
     { id: "anna.nguyen", name: "Anna Nguyen", password: bcrypt.hashSync("default123", 10), mustChangePassword: true },
@@ -21,14 +22,27 @@ let users = [
     { id: "raphael.rigault", name: "Raphael Rigault", password: bcrypt.hashSync("default123", 10), mustChangePassword: true },
 ];
 
-export default function handler(req, res) {
-    if (req.method === "POST") {
-        const { id, password, newPassword } = req.body;
+// Données des administrateurs
+let admins = [
+    { id: "admin1", password: bcrypt.hashSync("admin123", 10) },
+    { id: "admin2", password: bcrypt.hashSync("admin123", 10) },
+];
 
+export default function handler(req, res) {
+    const { id, password, newPassword } = req.body || {};
+
+    if (req.method === "POST") {
+        // Gestion des administrateurs
+        const admin = admins.find((a) => a.id === id);
+        if (admin && bcrypt.compareSync(password, admin.password)) {
+            return res.status(200).json({ message: "Admin authenticated." });
+        }
+
+        // Gestion des utilisateurs normaux
         const user = users.find((u) => u.id === id);
         if (user) {
             if (user.mustChangePassword && newPassword) {
-                // Changement de mot de passe
+                // Mise à jour du mot de passe
                 user.password = bcrypt.hashSync(newPassword, 10);
                 user.mustChangePassword = false;
                 return res.status(200).json({ message: "Password updated successfully." });
