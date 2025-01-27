@@ -21,12 +21,10 @@ let staffData = [
 
 export default function handler(req, res) {
     if (req.method === "GET") {
-        // Retourne toutes les statistiques
         return res.status(200).json(staffData);
     } else if (req.method === "POST") {
         const { id, calls, callsReached, pq } = req.body;
 
-        // Trouve l'utilisateur correspondant et met à jour ses stats
         const user = staffData.find((s) => s.id === id);
         if (user) {
             if (calls !== undefined) user.calls = calls;
