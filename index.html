@@ -3,19 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Dashboard - Auth</title>
+    <title>Sales Dashboard</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        .container { width: 90%; margin: auto; }
-        .hidden { display: none; }
-        form { margin: 20px 0; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            margin: auto;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Sales Dashboard</h1>
-        
-        <!-- Section Login -->
+
+        <!-- Login Section -->
         <div id="login-section">
             <h2>Login</h2>
             <form id="login-form">
@@ -27,40 +53,39 @@
             </form>
         </div>
 
-        <!-- Section User -->
-        <div id="user-section" class="hidden">
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="hidden">
             <h2>Welcome, <span id="user-name"></span></h2>
-            <form id="user-stats-form">
-                <label for="calls">Number of Calls:</label>
-                <input type="number" id="calls" required>
-                <label for="calls-reached">Number of Calls Reached:</label>
-                <input type="number" id="calls-reached" required>
-                <label for="pq">Number of PQ Sent/Created:</label>
-                <input type="number" id="pq" required>
-                <button type="submit">Update Stats</button>
-            </form>
-        </div>
-
-        <!-- Section Admin -->
-        <div id="admin-section" class="hidden">
-            <h2>Admin Panel</h2>
-            <button id="view-users">View All Users</button>
-            <div id="users-list" class="hidden">
-                <ul id="users-data"></ul>
-            </div>
+            <table id="stats-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Number of Calls</th>
+                        <th>Calls Reached</th>
+                        <th>Number of PQ Sent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Staff rows will be dynamically added here -->
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        const API_URL = 'https://stats-salessenter.vercel.app/api/users';
+        const API_USERS = 'https://stats-salessenter.vercel.app/api/users';
+        const API_STATS = 'https://stats-salessenter.vercel.app/api/staff';
 
+        let currentUser = null;
+
+        // Gestion de la connexion
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('login-id').value.trim();
             const password = document.getElementById('login-password').value.trim();
 
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(API_USERS, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id, password })
@@ -69,45 +94,57 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    if (id.startsWith('admin')) {
-                        document.getElementById('admin-section').classList.remove('hidden');
+                    if (data.message === "Authenticated") {
+                        currentUser = id;
                         document.getElementById('login-section').classList.add('hidden');
-                    } else {
-                        document.getElementById('user-section').classList.remove('hidden');
+                        document.getElementById('dashboard-section').classList.remove('hidden');
                         document.getElementById('user-name').textContent = data.name;
-                        document.getElementById('login-section').classList.add('hidden');
+
+                        // Charger les statistiques après une connexion réussie
+                        loadStats();
+                    } else {
+                        alert(data.message || 'Login failed.');
                     }
                 } else {
                     alert(data.message || 'Invalid credentials.');
                 }
             } catch (error) {
-                console.error('Error during login:', error);
+                console.error('Login error:', error);
                 alert('An error occurred. Please try again.');
             }
         });
 
-        document.getElementById('user-stats-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const calls = parseInt(document.getElementById('calls').value);
-            const callsReached = parseInt(document.getElementById('calls-reached').value);
-            const pq = parseInt(document.getElementById('pq').value);
+        // Charger les statistiques du tableau
+        async function loadStats() {
+            try {
+                console.log('Fetching staff statistics...');
+                const response = await fetch(API_STATS);
+                const stats = await response.json();
 
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: currentUser, calls, callsReached, pq })
-            });
+                console.log('Staff Data:', stats);
 
-            if (response.ok) {
-                alert('Stats updated successfully!');
-            } else {
-                alert('Failed to update stats.');
+                const tableBody = document.getElementById('stats-table').querySelector('tbody');
+                tableBody.innerHTML = ''; // Réinitialiser le tableau
+
+                stats.forEach((stat) => {
+                    console.log('Adding row for:', stat.name);
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${stat.name}</td>
+                        <td>${stat.calls}</td>
+                        <td>${stat.callsReached}</td>
+                        <td>${stat.pq}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                alert('Failed to load staff statistics.');
             }
-        });
+        }
     </script>
 </body>
 </html>
-
 
 
 
