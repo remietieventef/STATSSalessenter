@@ -54,26 +54,12 @@
     <script>
         const API_URL = '/api/users';
 
-        // Elements
-        const loginSection = document.getElementById('login-section');
-        const userSection = document.getElementById('user-section');
-        const adminSection = document.getElementById('admin-section');
-        const userNameDisplay = document.getElementById('user-name');
-
-        let currentUser = null;
-
         document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault(); // Empêche le rafraîchissement de la page
+            e.preventDefault();
             const id = document.getElementById('login-id').value.trim();
             const password = document.getElementById('login-password').value.trim();
 
-            if (!id || !password) {
-                alert('Please fill in both ID and password.');
-                return;
-            }
-
             try {
-                // Appelle l'API pour vérifier les identifiants
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -83,8 +69,6 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Redirige ou affiche des informations selon le type d'utilisateur
-                    alert(`Welcome, ${data.name || 'Admin'}!`);
                     if (id.startsWith('admin')) {
                         document.getElementById('admin-section').classList.remove('hidden');
                         document.getElementById('login-section').classList.add('hidden');
