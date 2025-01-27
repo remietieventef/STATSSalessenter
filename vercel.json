@@ -4,8 +4,8 @@
     { "src": "index.html", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/api/users", "dest": "/api/users.js" },
+    { "src": "/api/staff", "dest": "/api/staff.js" },
     { "src": "/(.*)", "dest": "/index.html" }
-    { "src": "/api/users", "dest": "/api/users.js" }
   ]
 }
