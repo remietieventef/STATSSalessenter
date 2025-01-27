@@ -173,6 +173,7 @@
                         document.getElementById('user-name').textContent = data.name;
                         currentUser = id;
                         isAdmin = data.isAdmin || false;
+
                         loadStats();
 
                         if (isAdmin) {
@@ -229,7 +230,6 @@
             }
         }
 
-        // Fonction pour remplir le menu déroulant des utilisateurs
         async function populateUserDropdown() {
             try {
                 const response = await fetch(API_STATS);
@@ -249,32 +249,6 @@
             }
         }
 
-        // Mise à jour des statistiques par l'admin
-        document.getElementById('admin-update-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const userId = document.getElementById('select-user').value;
-            const calls = parseInt(document.getElementById('admin-calls').value, 10);
-            const callsReached = parseInt(document.getElementById('admin-calls-reached').value, 10);
-            const pq = parseInt(document.getElementById('admin-pq').value, 10);
-
-            try {
-                const response = await fetch(API_STATS, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: userId, calls, callsReached, pq })
-                });
-
-                if (response.ok) {
-                    alert('User statistics updated successfully!');
-                    loadStats();
-                } else {
-                    alert('Failed to update user statistics.');
-                }
-            } catch (error) {
-                console.error('Error updating user stats:', error);
-            }
-        });
-
         function getColor(value, type) {
             if (type === 'calls') {
                 return value <= 200 ? 'orange' : value <= 270 ? 'yellow' : 'green';
@@ -290,3 +264,4 @@
     </script>
 </body>
 </html>
+
