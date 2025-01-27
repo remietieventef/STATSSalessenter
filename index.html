@@ -66,6 +66,8 @@
         <!-- Dashboard Section -->
         <div id="dashboard-section" class="hidden">
             <h2>Welcome, <span id="user-name"></span></h2>
+
+            <!-- Table -->
             <table id="stats-table">
                 <thead>
                     <tr>
@@ -79,6 +81,18 @@
                     <!-- Rows will be dynamically added here -->
                 </tbody>
             </table>
+
+            <!-- Update Stats Form -->
+            <h3>Update Your Statistics</h3>
+            <form id="update-stats-form">
+                <label for="calls">Number of Calls:</label>
+                <input type="number" id="calls" min="0" required>
+                <label for="calls-reached">Calls Reached:</label>
+                <input type="number" id="calls-reached" min="0" required>
+                <label for="pq">Number of PQ Sent:</label>
+                <input type="number" id="pq" min="0" required>
+                <button type="submit">Update</button>
+            </form>
         </div>
     </div>
 
@@ -114,6 +128,7 @@
                         document.getElementById('login-section').classList.add('hidden');
                         document.getElementById('dashboard-section').classList.remove('hidden');
                         document.getElementById('user-name').textContent = data.name;
+                        currentUser = id;
                         loadStats();
                     }
                 } else {
@@ -181,7 +196,34 @@
                 alert('Failed to load staff statistics.');
             }
         }
+
+        // Mise à jour des statistiques
+        document.getElementById('update-stats-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const calls = parseInt(document.getElementById('calls').value, 10);
+            const callsReached = parseInt(document.getElementById('calls-reached').value, 10);
+            const pq = parseInt(document.getElementById('pq').value, 10);
+
+            try {
+                const response = await fetch(API_STATS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentUser, calls, callsReached, pq })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Statistics updated successfully!');
+                    loadStats(); // Recharger le tableau
+                } else {
+                    alert(data.message || 'Failed to update statistics.');
+                }
+            } catch (error) {
+                console.error('Error updating stats:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
     </script>
 </body>
 </html>
-
