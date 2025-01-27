@@ -30,10 +30,25 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
+            vertical-align: middle;
         }
 
         th {
             background-color: #f4f4f4;
+        }
+
+        .progress {
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 10px;
+            width: 80%;
+            margin: 5px auto;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
         }
     </style>
 </head>
@@ -119,12 +134,10 @@
 
                 if (response.ok) {
                     if (data.message === "New password required.") {
-                        // Affiche la section pour changer le mot de passe
                         document.getElementById('login-section').classList.add('hidden');
                         document.getElementById('change-password-section').classList.remove('hidden');
                         currentUser = id;
                     } else {
-                        // Connexion réussie
                         document.getElementById('login-section').classList.add('hidden');
                         document.getElementById('dashboard-section').classList.remove('hidden');
                         document.getElementById('user-name').textContent = data.name;
@@ -179,15 +192,30 @@
                 const stats = await response.json();
 
                 const tableBody = document.getElementById('stats-table').querySelector('tbody');
-                tableBody.innerHTML = ''; // Réinitialiser le tableau
+                tableBody.innerHTML = '';
 
                 stats.forEach((stat) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${stat.name}</td>
-                        <td>${stat.calls}</td>
-                        <td>${stat.callsReached}</td>
-                        <td>${stat.pq}</td>
+                        <td>
+                            ${stat.calls}
+                            <div class="progress">
+                                <div class="progress-bar" style="width: ${Math.min((stat.calls / 300) * 100, 100)}%; background-color: ${getColor(stat.calls, 'calls')}"></div>
+                            </div>
+                        </td>
+                        <td>
+                            ${stat.callsReached}
+                            <div class="progress">
+                                <div class="progress-bar" style="width: ${Math.min((stat.callsReached / 60) * 100, 100)}%; background-color: ${getColor(stat.callsReached, 'callsReached')}"></div>
+                            </div>
+                        </td>
+                        <td>
+                            ${stat.pq}
+                            <div class="progress">
+                                <div class="progress-bar" style="width: ${Math.min((stat.pq / 10) * 100, 100)}%; background-color: ${getColor(stat.pq, 'pq')}"></div>
+                            </div>
+                        </td>
                     `;
                     tableBody.appendChild(row);
                 });
@@ -195,6 +223,19 @@
                 console.error('Error loading stats:', error);
                 alert('Failed to load staff statistics.');
             }
+        }
+
+        function getColor(value, type) {
+            if (type === 'calls') {
+                return value <= 200 ? 'orange' : value <= 270 ? 'yellow' : 'green';
+            }
+            if (type === 'callsReached') {
+                return value <= 30 ? 'orange' : value <= 50 ? 'yellow' : 'green';
+            }
+            if (type === 'pq') {
+                return value <= 4 ? 'orange' : value <= 6 ? 'yellow' : 'green';
+            }
+            return 'gray';
         }
 
         // Mise à jour des statistiques
@@ -215,7 +256,7 @@
 
                 if (response.ok) {
                     alert('Statistics updated successfully!');
-                    loadStats(); // Recharger le tableau
+                    loadStats();
                 } else {
                     alert(data.message || 'Failed to update statistics.');
                 }
