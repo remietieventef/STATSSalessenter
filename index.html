@@ -106,17 +106,37 @@
                 </tbody>
             </table>
 
-            <!-- Update Stats Form -->
-            <h3>Update Your Statistics</h3>
-            <form id="update-stats-form">
-                <label for="calls">Number of Calls:</label>
-                <input type="number" id="calls" min="0" required>
-                <label for="calls-reached">Calls Reached:</label>
-                <input type="number" id="calls-reached" min="0" required>
-                <label for="pq">Number of PQ Sent:</label>
-                <input type="number" id="pq" min="0" required>
-                <button type="submit">Update</button>
-            </form>
+            <!-- Admin Update Stats Form -->
+            <div id="admin-update-section" class="hidden">
+                <h3>Admin: Update User Statistics</h3>
+                <form id="admin-update-form">
+                    <label for="select-user">Select User:</label>
+                    <select id="select-user" required>
+                        <!-- User options will be added dynamically -->
+                    </select>
+                    <label for="admin-calls">Number of Calls:</label>
+                    <input type="number" id="admin-calls" min="0" required>
+                    <label for="admin-calls-reached">Calls Reached:</label>
+                    <input type="number" id="admin-calls-reached" min="0" required>
+                    <label for="admin-pq">Number of PQ Sent:</label>
+                    <input type="number" id="admin-pq" min="0" required>
+                    <button type="submit">Update</button>
+                </form>
+            </div>
+
+            <!-- Update Stats Form for Normal Users -->
+            <div id="user-update-section">
+                <h3>Update Your Statistics</h3>
+                <form id="update-stats-form">
+                    <label for="calls">Number of Calls:</label>
+                    <input type="number" id="calls" min="0" required>
+                    <label for="calls-reached">Calls Reached:</label>
+                    <input type="number" id="calls-reached" min="0" required>
+                    <label for="pq">Number of PQ Sent:</label>
+                    <input type="number" id="pq" min="0" required>
+                    <button type="submit">Update</button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -125,6 +145,7 @@
         const API_STATS = 'https://stats-salessenter.vercel.app/api/staff';
 
         let currentUser = null;
+        let isAdmin = false;
 
         // Gestion de la connexion
         document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -151,45 +172,19 @@
                         document.getElementById('dashboard-section').classList.remove('hidden');
                         document.getElementById('user-name').textContent = data.name;
                         currentUser = id;
+                        isAdmin = data.isAdmin || false;
                         loadStats();
+
+                        if (isAdmin) {
+                            document.getElementById('admin-update-section').classList.remove('hidden');
+                            populateUserDropdown();
+                        }
                     }
                 } else {
                     alert(data.message || 'Invalid credentials.');
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                alert('An error occurred. Please try again.');
-            }
-        });
-
-        // Gestion du changement de mot de passe
-        document.getElementById('change-password-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newPassword = document.getElementById('new-password').value.trim();
-
-            if (!newPassword) {
-                alert("Please enter a new password.");
-                return;
-            }
-
-            try {
-                const response = await fetch(API_USERS, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: currentUser, newPassword })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    alert('Password updated successfully! Please log in again.');
-                    document.getElementById('change-password-section').classList.add('hidden');
-                    document.getElementById('login-section').classList.remove('hidden');
-                } else {
-                    alert(data.message || 'Failed to update password.');
-                }
-            } catch (error) {
-                console.error('Password change error:', error);
                 alert('An error occurred. Please try again.');
             }
         });
@@ -234,6 +229,52 @@
             }
         }
 
+        // Fonction pour remplir le menu déroulant des utilisateurs
+        async function populateUserDropdown() {
+            try {
+                const response = await fetch(API_STATS);
+                const stats = await response.json();
+
+                const dropdown = document.getElementById('select-user');
+                dropdown.innerHTML = '';
+
+                stats.forEach((stat) => {
+                    const option = document.createElement('option');
+                    option.value = stat.id;
+                    option.textContent = stat.name;
+                    dropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error populating user dropdown:', error);
+            }
+        }
+
+        // Mise à jour des statistiques par l'admin
+        document.getElementById('admin-update-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('select-user').value;
+            const calls = parseInt(document.getElementById('admin-calls').value, 10);
+            const callsReached = parseInt(document.getElementById('admin-calls-reached').value, 10);
+            const pq = parseInt(document.getElementById('admin-pq').value, 10);
+
+            try {
+                const response = await fetch(API_STATS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: userId, calls, callsReached, pq })
+                });
+
+                if (response.ok) {
+                    alert('User statistics updated successfully!');
+                    loadStats();
+                } else {
+                    alert('Failed to update user statistics.');
+                }
+            } catch (error) {
+                console.error('Error updating user stats:', error);
+            }
+        });
+
         function getColor(value, type) {
             if (type === 'calls') {
                 return value <= 200 ? 'orange' : value <= 270 ? 'yellow' : 'green';
@@ -246,34 +287,7 @@
             }
             return 'gray';
         }
-
-        // Mise à jour des statistiques
-        document.getElementById('update-stats-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const calls = parseInt(document.getElementById('calls').value, 10);
-            const callsReached = parseInt(document.getElementById('calls-reached').value, 10);
-            const pq = parseInt(document.getElementById('pq').value, 10);
-
-            try {
-                const response = await fetch(API_STATS, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: currentUser, calls, callsReached, pq })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    alert('Statistics updated successfully!');
-                    loadStats();
-                } else {
-                    alert(data.message || 'Failed to update statistics.');
-                }
-            } catch (error) {
-                console.error('Error updating stats:', error);
-                alert('An error occurred. Please try again.');
-            }
-        });
     </script>
 </body>
 </html>
+
