@@ -91,11 +91,11 @@
         <div id="dashboard-section" class="hidden">
             <h2>Welcome, <span id="user-name"></span></h2>
 
-            <!-- Table -->
+            <!-- Weekly Stats Table -->
             <table id="stats-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>Date</th>
                         <th>Number of Calls</th>
                         <th>Calls Reached</th>
                         <th>Number of PQ Sent</th>
@@ -106,7 +106,21 @@
                 </tbody>
             </table>
 
-            <!-- Admin Update Stats Form -->
+            <!-- Update Stats Form -->
+            <div id="update-stats-section" class="hidden">
+                <h3>Update Today's Statistics</h3>
+                <form id="update-stats-form">
+                    <label for="calls">Number of Calls:</label>
+                    <input type="number" id="calls" min="0" required>
+                    <label for="calls-reached">Calls Reached:</label>
+                    <input type="number" id="calls-reached" min="0" required>
+                    <label for="pq">Number of PQ Sent:</label>
+                    <input type="number" id="pq" min="0" required>
+                    <button type="submit">Update</button>
+                </form>
+            </div>
+
+            <!-- Admin Update Stats Section -->
             <div id="admin-update-section" class="hidden">
                 <h3>Admin: Update User Statistics</h3>
                 <form id="admin-update-form">
@@ -120,20 +134,6 @@
                     <input type="number" id="admin-calls-reached" min="0" required>
                     <label for="admin-pq">Number of PQ Sent:</label>
                     <input type="number" id="admin-pq" min="0" required>
-                    <button type="submit">Update</button>
-                </form>
-            </div>
-
-            <!-- Update Stats Form for Normal Users -->
-            <div id="user-update-section">
-                <h3>Update Your Statistics</h3>
-                <form id="update-stats-form">
-                    <label for="calls">Number of Calls:</label>
-                    <input type="number" id="calls" min="0" required>
-                    <label for="calls-reached">Calls Reached:</label>
-                    <input type="number" id="calls-reached" min="0" required>
-                    <label for="pq">Number of PQ Sent:</label>
-                    <input type="number" id="pq" min="0" required>
                     <button type="submit">Update</button>
                 </form>
             </div>
@@ -179,6 +179,8 @@
                         if (isAdmin) {
                             document.getElementById('admin-update-section').classList.remove('hidden');
                             populateUserDropdown();
+                        } else {
+                            document.getElementById('update-stats-section').classList.remove('hidden');
                         }
                     }
                 } else {
@@ -196,40 +198,29 @@
                 const response = await fetch(API_STATS);
                 const stats = await response.json();
 
+                const userStats = stats.find((user) => user.id === currentUser);
                 const tableBody = document.getElementById('stats-table').querySelector('tbody');
                 tableBody.innerHTML = '';
 
-                stats.forEach((stat) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${stat.name}</td>
-                        <td>
-                            ${stat.calls}
-                            <div class="progress">
-                                <div class="progress-bar" style="width: ${Math.min((stat.calls / 300) * 100, 100)}%; background-color: ${getColor(stat.calls, 'calls')}"></div>
-                            </div>
-                        </td>
-                        <td>
-                            ${stat.callsReached}
-                            <div class="progress">
-                                <div class="progress-bar" style="width: ${Math.min((stat.callsReached / 60) * 100, 100)}%; background-color: ${getColor(stat.callsReached, 'callsReached')}"></div>
-                            </div>
-                        </td>
-                        <td>
-                            ${stat.pq}
-                            <div class="progress">
-                                <div class="progress-bar" style="width: ${Math.min((stat.pq / 10) * 100, 100)}%; background-color: ${getColor(stat.pq, 'pq')}"></div>
-                            </div>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
+                if (userStats) {
+                    userStats.weeklyStats.forEach((stat) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${stat.date}</td>
+                            <td>${stat.calls}</td>
+                            <td>${stat.callsReached}</td>
+                            <td>${stat.pq}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
             } catch (error) {
                 console.error('Error loading stats:', error);
                 alert('Failed to load staff statistics.');
             }
         }
 
+        // Remplir le menu déroulant des utilisateurs pour les admins
         async function populateUserDropdown() {
             try {
                 const response = await fetch(API_STATS);
@@ -249,18 +240,56 @@
             }
         }
 
-        function getColor(value, type) {
-            if (type === 'calls') {
-                return value <= 200 ? 'orange' : value <= 270 ? 'yellow' : 'green';
+        // Mettre à jour les statistiques pour les utilisateurs
+        document.getElementById('update-stats-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const calls = parseInt(document.getElementById('calls').value, 10);
+            const callsReached = parseInt(document.getElementById('calls-reached').value, 10);
+            const pq = parseInt(document.getElementById('pq').value, 10);
+
+            try {
+                const response = await fetch(API_STATS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentUser, calls, callsReached, pq }),
+                });
+
+                if (response.ok) {
+                    alert('Statistics updated successfully!');
+                    loadStats();
+                } else {
+                    alert('Failed to update statistics.');
+                }
+            } catch (error) {
+                console.error('Error updating stats:', error);
             }
-            if (type === 'callsReached') {
-                return value <= 30 ? 'orange' : value <= 50 ? 'yellow' : 'green';
+        });
+
+        // Mettre à jour les statistiques pour les admins
+        document.getElementById('admin-update-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('select-user').value;
+            const calls = parseInt(document.getElementById('admin-calls').value, 10);
+            const callsReached = parseInt(document.getElementById('admin-calls-reached').value, 10);
+            const pq = parseInt(document.getElementById('admin-pq').value, 10);
+
+            try {
+                const response = await fetch(API_STATS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: userId, calls, callsReached, pq }),
+                });
+
+                if (response.ok) {
+                    alert('User statistics updated successfully!');
+                    loadStats();
+                } else {
+                    alert('Failed to update user statistics.');
+                }
+            } catch (error) {
+                console.error('Error updating user stats:', error);
             }
-            if (type === 'pq') {
-                return value <= 4 ? 'orange' : value <= 6 ? 'yellow' : 'green';
-            }
-            return 'gray';
-        }
+        });
     </script>
 </body>
 </html>
